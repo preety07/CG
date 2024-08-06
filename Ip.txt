@@ -1,0 +1,173 @@
+# 7 quadrants
+import cv2 as cv
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+#matplotlib.rc('figure',figsize=(15,5))
+img=cv.imread('puppy.jpeg')
+#plt.imshow(img)
+h,w,channels=img.shape
+#print(h,w,channels)
+#print(img)
+#img_rgb=img[:,:,::-1]
+#plt.imshow(img_rgb)
+img_gray=cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+#plt.imshow(img_gray, cmap='gray')
+h,w=img_gray.shape
+#print(h,w)
+
+#only one channel
+#print(img)
+cx=w//2 #columns
+cy=h//2 #rows
+tl=img[0:cy,0:cx] #top left
+tr=img[0:cy,cx:w] #top right
+bl=img[cy:h,0:cx] #bottom  left
+br=img[cy:h,cx:w] #bottom right
+plt.subplot(221);plt.imshow(tl)
+plt.subplot(222);plt.imshow(tr)
+plt.subplot(223);plt.imshow(bl)
+plt.subplot(224);plt.imshow(br)
+
+
+#8 Rotate and all
+
+import cv2 as cv
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+
+img = cv.imread('puppy.jpeg')
+img_rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+
+# Get image dimensions
+h, w = img.shape[:2]
+
+# ROTATION
+#matplotlib.rc('figure', figsize=(10, 8))
+img_90 = cv.rotate(img_rgb, cv.ROTATE_90_CLOCKWISE)
+img_90CC = cv.rotate(img_rgb, cv.ROTATE_90_COUNTERCLOCKWISE)
+img_180 = cv.rotate(img_rgb, cv.ROTATE_180)
+
+# SCALING
+img_half = cv.resize(img_rgb, (w // 2, h // 2))  # using dsize
+img_2x = cv.resize(img_rgb, None, fx=2, fy=2, interpolation=cv.INTER_LINEAR)
+img_nonUnf = cv.resize(img_rgb, None, fx=1.5, fy=0.5)
+
+# Translation
+tx = 100
+ty = 50
+M = np.float32([[1, 0, tx], [0, 1, ty]])
+img_trans = cv.warpAffine(img_rgb, M, (w, h))
+
+# Display the images
+images = [img_90, img_90CC, img_180, img_half, img_2x, img_nonUnf, img_rgb, img_trans]
+titles = ['Rotate -90-clockwise', 'Rotate -90-counterclockwise', 'Rotate -180', 
+          'Scale-0.5x', 'Scale2x', 'Scale-nonUniform', 'Original', 'Translate']
+
+for i in range(8):
+    plt.subplot(3, 3, i + 1)
+    plt.title(titles[i])
+    plt.imshow(images[i])
+    #plt.axis('off')  # Hide the axes for better visualization
+
+plt.tight_layout()
+plt.show()
+
+
+#9 Low level features-edges and texture
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load and process the image for Canny edge detection
+img = cv2.imread('messi.jpg')
+img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+img_canny = cv2.Canny(img_gray, threshold1=100, threshold2=200)
+
+# Load and process the image for Corner detection
+img_chess = cv2.imread('chess.jpg')
+img_chess_gray = cv2.cvtColor(img_chess, cv2.COLOR_BGR2GRAY)
+img_float = np.float32(img_chess_gray)
+dest = cv2.cornerHarris(img_float, blockSize=5, ksize=5, k=0.04)
+
+# Dilate the corners to increase their size
+dest = cv2.dilate(dest, None)
+
+# Threshold to mark the corners on the original image
+img_chess[dest > 0.01 * dest.max()] = [0, 255,0]
+
+# Convert images to RGB for matplotlib
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+img_chess_rgb = cv2.cvtColor(img_chess, cv2.COLOR_BGR2RGB)
+
+#texture
+
+laplacian = cv2.Laplacian(img_gray,cv2.CV_64F)
+laplacian = np.uint(np.absolute(laplacian))
+
+# Prepare images for display
+images = [img_rgb, img_canny, img_chess_rgb,laplacian]
+titles = ['Original', 'Canny Edge Detection', 'Corner Detection','Texture']
+
+# Display the images
+for i in range(4):
+    plt.subplot(3, 3, i + 1)
+    plt.title(titles[i])
+    plt.imshow(images[i])
+    plt.axis('off')  # Hide axes for clarity
+
+plt.tight_layout()
+plt.show()
+
+
+#10 smooth and blur
+
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.metrics import structural_similarity as ssm
+img = cv2.imread('puppy.jpeg')
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+img_blur = cv2.blur(img_rgb,(9,9))
+img_smooth = cv2.bilateralFilter(img_rgb, d=15,sigmaColor=50, sigmaSpace=50)
+
+images=[img_rgb,img_blur,img_smooth]
+titles=['Original','Blur','Smooth']
+for i in range(3):
+    plt.subplot(1,3,i+1);plt.title(titles[i]);plt.imshow(images[i])
+plt.tight_layout()
+plt.show()
+
+
+#11 Contouring
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+img_chess=cv.imread('chess.jpg')
+img_chess_gray=cv.cvtColor(img_chess,cv.COLOR_BGR2GRAY)
+img_canny=cv.Canny(img_chess_gray,threshold1=100,threshold2=200)
+contours,heirarchy=cv.findContours(img_canny,cv.RETR_TREE,cv.CHAIN_APPROX_NONE)
+cv.drawContours(img_chess,contours,-1,(0,255,0),3)
+plt.imshow(img_chess)
+
+
+
+#12 Face recognition
+
+import cv2
+import matplotlib.pyplot as plt
+img=cv2.imread('faces.jpg')
+img_gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+face_cascade=cv.CascadeClassifier(cv2.data.haarcascades+'haarcascade_frontalface_default.xml')
+
+faces=face_cascade.detectMultiScale(img_gray,1.3,2)
+
+for x,y,w,h in faces:
+    cv2.rectangle(img,(x,y),(x+w,y+h),(255,255,0),2)
+img=img[:,:,::-1]
+plt.imshow(img)
